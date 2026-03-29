@@ -206,8 +206,17 @@ def load_all_data(data_folder: str = DATA_FOLDER) -> list:
                     avail_stock = [c for c in stock_cols if c in raw_all.columns]
                     stock_df = raw_all[avail_stock].copy()
 
+                    # ── 証券コードを4桁に変換 ──
+                    # 例: 80580.0 → 80580 → 8058
                     if 'Code' in stock_df.columns:
-                        stock_df['Code'] = stock_df['Code'].astype(str).str.strip()
+                        stock_df['Code'] = (
+                            stock_df['Code']
+                            .astype(str)
+                            .str.strip()
+                            .str.replace(r'\.0$', '', regex=True)  # 80580.0 → 80580
+                            .str.zfill(5)                           # 桁揃え念のため
+                            .str[:-1]                               # 末尾1桁除去 → 4桁
+                        )
 
                 # ── Market_Summary シート ──
                 market_summary = None
@@ -483,40 +492,22 @@ def render_market_condition(market_condition: pd.DataFrame):
 
     st.subheader("📊 マーケット詳細コンディション")
 
-    col_hantei = None
-    col_score  = None
-    col_joho   = None
-
-    # 列名を柔軟に検出
-    for c in market_condition.columns:
-        cl = str(c).strip()
-        if cl in ('判定', '判定 '):
-            col_hantei = c
-        if cl in ('スコア', 'スコア '):
-            col_score = c
-        if cl in ('条件', '条件 '):
-            col_joho = c
-
-    # fallback: 列インデックスで対応
     cols = list(market_condition.columns)
-    if col_joho   is None and len(cols) > 0: col_joho   = cols[0]
-    if col_hantei is None and len(cols) > 2: col_hantei = cols[2]
-    if col_score  is None and len(cols) > 3: col_score  = cols[3]
+    col_joho   = cols[0] if len(cols) > 0 else None
+    col_hantei = cols[2] if len(cols) > 2 else None
 
     def row_style(row):
-        styles = [''] * len(row)
         hantei_val = ''
         if col_hantei and col_hantei in row.index:
             hantei_val = str(row[col_hantei]).lower()
-
-        bg = ''
         if hantei_val == 'positive':
             bg = 'background-color: #e8f5e9'
         elif hantei_val == 'negative':
             bg = 'background-color: #ffebee'
         elif hantei_val == 'neutral':
             bg = 'background-color: #fffde7'
-
+        else:
+            bg = ''
         return [bg] * len(row)
 
     styled = market_condition.style.apply(row_style, axis=1)
@@ -535,8 +526,8 @@ def render_momentum_tab(
 ):
     sector_rs_col   = f'Sector_RS_Pct_{rs_mode}'
     industry_rs_col = f'Industry_RS_Pct_{rs_mode}'
-    score_col       = 'Screening_Score' if rs_mode == 'CW' else 'Screening_Score_EW'
-    tech_col        = 'Technical_Score' if rs_mode == 'CW' else 'Technical_Score_EW'
+    score_col       = 'Screening_Score'    if rs_mode == 'CW' else 'Screening_Score_EW'
+    tech_col        = 'Technical_Score'    if rs_mode == 'CW' else 'Technical_Score_EW'
     mode_label      = "（時価総額加重: CW）" if rs_mode == "CW" else "（等加重: EW）"
 
     if stock_df is None or stock_df.empty:
@@ -604,10 +595,10 @@ def render_momentum_tab(
 
             st.markdown("---")
             st.markdown("**市場区分**")
-            mkt_options = ['すべて', 'プライム', 'スタンダード', 'グロース']
+            mkt_options = ['プライム', 'スタンダード', 'グロース']
             selected_mkt = st.multiselect(
-                "市場区分を選択（複数可）",
-                options=mkt_options[1:],
+                "市場区分を選択（複数可、未選択=すべて）",
+                options=mkt_options,
                 default=[],
                 key=f"{tab_key}_mkt"
             )
@@ -891,7 +882,7 @@ def render_momentum_tab_both(
             st.markdown("**市場区分**")
             mkt_options = ['プライム', 'スタンダード', 'グロース']
             selected_mkt = st.multiselect(
-                "市場区分を選択（複数可）",
+                "市場区分を選択（複数可、未選択=すべて）",
                 options=mkt_options,
                 default=[],
                 key=f"{tab_key}_mkt"
@@ -1197,8 +1188,8 @@ if not all_data:
     st.stop()
 
 all_data.sort(key=lambda x: x['date'])
-latest          = all_data[-1]
-latest_stock_df = latest.get('stock_df')
+latest           = all_data[-1]
+latest_stock_df  = latest.get('stock_df')
 latest_disp_date = latest['display_date'].strftime('%Y年%m月%d日')
 
 # ── マーケット状況バナー ──
@@ -1356,9 +1347,9 @@ with tab_sec_compare:
     compare_df = build_latest_sector_table(latest['sector_rs_df'])
 
     if not compare_df.empty:
-        rs_cw_col  = 'RS%（CW）'
-        rs_ew_col  = 'RS%（EW）'
-        diff_col   = '順位差(EW-CW)'
+        rs_cw_col = 'RS%（CW）'
+        rs_ew_col = 'RS%（EW）'
+        diff_col  = '順位差(EW-CW)'
 
         fmt = {rs_cw_col: '{:.1f}', rs_ew_col: '{:.1f}', diff_col: '{:+d}'}
         if '1年騰落率%' in compare_df.columns:
@@ -1431,7 +1422,6 @@ with tab_ind_compare:
 with tab_market_cond:
     render_market_condition(latest.get('market_condition'))
 
-    # Market_Summary の詳細も表示
     if latest['market_summary']:
         ms = latest['market_summary']
         st.markdown("---")
@@ -1493,7 +1483,7 @@ with tab_industry_search:
     if latest_stock_df is None or latest_stock_df.empty:
         st.error("銘柄データが読み込めませんでした。")
     else:
-        industry_col = 'YF_Industry'
+        industry_col  = 'YF_Industry'
         industry_list = sorted(
             latest_stock_df[industry_col].dropna().unique().tolist()
         ) if industry_col in latest_stock_df.columns else []
