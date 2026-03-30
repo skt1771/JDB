@@ -722,8 +722,9 @@ def render_momentum_tab(
     ]
     display_cols = [c for c in display_cols_ordered if c in filtered.columns]
 
+    # ── Technical_Score（モードに応じた列）を優先してソート ──
     sort_key = next(
-        (c for c in [score_col, 'RS_Score', 'Individual_RS_Percentile']
+        (c for c in [tech_col, 'Screening_Score', 'RS_Score', 'Individual_RS_Percentile']
          if c in filtered.columns),
         display_cols[0]
     )
@@ -970,13 +971,12 @@ def render_momentum_tab_both(
         st.subheader("💹 バイプレッシャー条件")
         st.caption("各項目ごとにON/OFFを切り替えられます。")
 
-        # ── BP設定: (カラム名, ラベル, chk_key, val_key, デフォルト値, デフォルトON/OFF) ──
         bp_items = [
-            ('BP_Stock',       'BP_Stock',       f"{tab_key}_chk_bp_stock",  f"{tab_key}_val_bp_stock",  0.60, True ),  # 0.55→0.60, ON
-            ('BP_Sector_CW',   'BP_Sector_CW',   f"{tab_key}_chk_bp_sec_cw", f"{tab_key}_val_bp_sec_cw", 0.50, True ),  # ON
-            ('BP_Sector_EW',   'BP_Sector_EW',   f"{tab_key}_chk_bp_sec_ew", f"{tab_key}_val_bp_sec_ew", 0.50, True ),  # ON
-            ('BP_Industry_CW', 'BP_Industry_CW', f"{tab_key}_chk_bp_ind_cw", f"{tab_key}_val_bp_ind_cw", 0.55, True ),  # 0.50→0.55, ON
-            ('BP_Industry_EW', 'BP_Industry_EW', f"{tab_key}_chk_bp_ind_ew", f"{tab_key}_val_bp_ind_ew", 0.55, True ),  # 0.50→0.55, ON
+            ('BP_Stock',       'BP_Stock',       f"{tab_key}_chk_bp_stock",  f"{tab_key}_val_bp_stock",  0.60, True),
+            ('BP_Sector_CW',   'BP_Sector_CW',   f"{tab_key}_chk_bp_sec_cw", f"{tab_key}_val_bp_sec_cw", 0.50, True),
+            ('BP_Sector_EW',   'BP_Sector_EW',   f"{tab_key}_chk_bp_sec_ew", f"{tab_key}_val_bp_sec_ew", 0.50, True),
+            ('BP_Industry_CW', 'BP_Industry_CW', f"{tab_key}_chk_bp_ind_cw", f"{tab_key}_val_bp_ind_cw", 0.55, True),
+            ('BP_Industry_EW', 'BP_Industry_EW', f"{tab_key}_chk_bp_ind_ew", f"{tab_key}_val_bp_ind_ew", 0.55, True),
         ]
 
         bp_settings = {}
@@ -986,7 +986,7 @@ def render_momentum_tab_both(
             with target_col:
                 enabled_min = st.checkbox(
                     f"{label} 最小値を有効にする",
-                    value=default_on,   # ← True（チェック済み）
+                    value=default_on,
                     key=chk_key,
                 )
                 if enabled_min:
@@ -1104,8 +1104,9 @@ def render_momentum_tab_both(
     ]
     display_cols = [c for c in display_cols_ordered if c in filtered.columns]
 
+    # ── Technical_Score（CW）を優先してソート ──
     sort_key = next(
-        (c for c in ['Screening_Score', 'RS_Score', 'Individual_RS_Percentile']
+        (c for c in ['Technical_Score', 'Screening_Score', 'RS_Score', 'Individual_RS_Percentile']
          if c in filtered.columns),
         display_cols[0]
     )
@@ -1544,7 +1545,7 @@ with tab_industry_search:
                     ]
 
                     sort_key = next(
-                        (c for c in ['Screening_Score', 'RS_Score', 'Individual_RS_Percentile']
+                        (c for c in ['Technical_Score', 'Screening_Score', 'RS_Score', 'Individual_RS_Percentile']
                          if c in result_df.columns),
                         display_cols[0],
                     )
