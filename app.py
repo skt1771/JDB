@@ -213,9 +213,9 @@ def load_all_data(data_folder: str = DATA_FOLDER) -> list:
                             stock_df['Code']
                             .astype(str)
                             .str.strip()
-                            .str.replace(r'\.0$', '', regex=True)  # 80580.0 → 80580
-                            .str.zfill(5)                           # 桁揃え念のため
-                            .str[:-1]                               # 末尾1桁除去 → 4桁
+                            .str.replace(r'\.0$', '', regex=True)
+                            .str.zfill(5)
+                            .str[:-1]
                         )
 
                 # ── Market_Summary シート ──
@@ -493,7 +493,6 @@ def render_market_condition(market_condition: pd.DataFrame):
     st.subheader("📊 マーケット詳細コンディション")
 
     cols = list(market_condition.columns)
-    col_joho   = cols[0] if len(cols) > 0 else None
     col_hantei = cols[2] if len(cols) > 2 else None
 
     def row_style(row):
@@ -932,17 +931,17 @@ def render_momentum_tab_both(
             if enable_rs_cw:
                 individual_rs_min = st.number_input(
                     "Individual RS Percentile 最小値",
-                    value=80, step=1,
+                    value=80, step=1,           # ← 80のまま
                     key=f"{tab_key}_ind_rs_min"
                 )
                 sector_rs_cw_min = st.number_input(
                     "Sector RS Pct CW 最小値",
-                    value=63, step=1,
+                    value=70, step=1,           # ← 63→70
                     key=f"{tab_key}_sec_rs_cw_min"
                 )
                 industry_rs_cw_min = st.number_input(
                     "Industry RS Pct CW 最小値",
-                    value=80, step=1,
+                    value=70, step=1,           # ← 80→70
                     key=f"{tab_key}_ind_rs_cw_min"
                 )
             else:
@@ -957,12 +956,12 @@ def render_momentum_tab_both(
             if enable_rs_ew:
                 sector_rs_ew_min = st.number_input(
                     "Sector RS Pct EW 最小値",
-                    value=63, step=1,
+                    value=70, step=1,           # ← 63→70
                     key=f"{tab_key}_sec_rs_ew_min"
                 )
                 industry_rs_ew_min = st.number_input(
                     "Industry RS Pct EW 最小値",
-                    value=80, step=1,
+                    value=70, step=1,           # ← 80→70
                     key=f"{tab_key}_ind_rs_ew_min"
                 )
             else:
@@ -973,11 +972,11 @@ def render_momentum_tab_both(
         st.caption("各項目ごとにON/OFFを切り替えられます。")
 
         bp_items = [
-            ('BP_Stock',       'BP_Stock',       f"{tab_key}_chk_bp_stock",   f"{tab_key}_val_bp_stock",   0.55),
-            ('BP_Sector_CW',   'BP_Sector_CW',   f"{tab_key}_chk_bp_sec_cw",  f"{tab_key}_val_bp_sec_cw",  0.50),
-            ('BP_Sector_EW',   'BP_Sector_EW',   f"{tab_key}_chk_bp_sec_ew",  f"{tab_key}_val_bp_sec_ew",  0.50),
-            ('BP_Industry_CW', 'BP_Industry_CW', f"{tab_key}_chk_bp_ind_cw",  f"{tab_key}_val_bp_ind_cw",  0.50),
-            ('BP_Industry_EW', 'BP_Industry_EW', f"{tab_key}_chk_bp_ind_ew",  f"{tab_key}_val_bp_ind_ew",  0.50),
+            ('BP_Stock',       'BP_Stock',       f"{tab_key}_chk_bp_stock",  f"{tab_key}_val_bp_stock",  0.55),
+            ('BP_Sector_CW',   'BP_Sector_CW',   f"{tab_key}_chk_bp_sec_cw", f"{tab_key}_val_bp_sec_cw", 0.50),
+            ('BP_Sector_EW',   'BP_Sector_EW',   f"{tab_key}_chk_bp_sec_ew", f"{tab_key}_val_bp_sec_ew", 0.50),
+            ('BP_Industry_CW', 'BP_Industry_CW', f"{tab_key}_chk_bp_ind_cw", f"{tab_key}_val_bp_ind_cw", 0.50),
+            ('BP_Industry_EW', 'BP_Industry_EW', f"{tab_key}_chk_bp_ind_ew", f"{tab_key}_val_bp_ind_ew", 0.50),
         ]
 
         bp_settings = {}
