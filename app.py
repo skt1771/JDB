@@ -207,7 +207,6 @@ def load_all_data(data_folder: str = DATA_FOLDER) -> list:
                     stock_df = raw_all[avail_stock].copy()
 
                     # ── 証券コードを4桁に変換 ──
-                    # 例: 80580.0 → 80580 → 8058
                     if 'Code' in stock_df.columns:
                         stock_df['Code'] = (
                             stock_df['Code']
@@ -931,17 +930,17 @@ def render_momentum_tab_both(
             if enable_rs_cw:
                 individual_rs_min = st.number_input(
                     "Individual RS Percentile 最小値",
-                    value=80, step=1,           # ← 80のまま
+                    value=80, step=1,
                     key=f"{tab_key}_ind_rs_min"
                 )
                 sector_rs_cw_min = st.number_input(
                     "Sector RS Pct CW 最小値",
-                    value=70, step=1,           # ← 63→70
+                    value=70, step=1,
                     key=f"{tab_key}_sec_rs_cw_min"
                 )
                 industry_rs_cw_min = st.number_input(
                     "Industry RS Pct CW 最小値",
-                    value=70, step=1,           # ← 80→70
+                    value=70, step=1,
                     key=f"{tab_key}_ind_rs_cw_min"
                 )
             else:
@@ -956,12 +955,12 @@ def render_momentum_tab_both(
             if enable_rs_ew:
                 sector_rs_ew_min = st.number_input(
                     "Sector RS Pct EW 最小値",
-                    value=70, step=1,           # ← 63→70
+                    value=70, step=1,
                     key=f"{tab_key}_sec_rs_ew_min"
                 )
                 industry_rs_ew_min = st.number_input(
                     "Industry RS Pct EW 最小値",
-                    value=70, step=1,           # ← 80→70
+                    value=70, step=1,
                     key=f"{tab_key}_ind_rs_ew_min"
                 )
             else:
@@ -971,22 +970,23 @@ def render_momentum_tab_both(
         st.subheader("💹 バイプレッシャー条件")
         st.caption("各項目ごとにON/OFFを切り替えられます。")
 
+        # ── BP設定: (カラム名, ラベル, chk_key, val_key, デフォルト値, デフォルトON/OFF) ──
         bp_items = [
-            ('BP_Stock',       'BP_Stock',       f"{tab_key}_chk_bp_stock",  f"{tab_key}_val_bp_stock",  0.55),
-            ('BP_Sector_CW',   'BP_Sector_CW',   f"{tab_key}_chk_bp_sec_cw", f"{tab_key}_val_bp_sec_cw", 0.50),
-            ('BP_Sector_EW',   'BP_Sector_EW',   f"{tab_key}_chk_bp_sec_ew", f"{tab_key}_val_bp_sec_ew", 0.50),
-            ('BP_Industry_CW', 'BP_Industry_CW', f"{tab_key}_chk_bp_ind_cw", f"{tab_key}_val_bp_ind_cw", 0.50),
-            ('BP_Industry_EW', 'BP_Industry_EW', f"{tab_key}_chk_bp_ind_ew", f"{tab_key}_val_bp_ind_ew", 0.50),
+            ('BP_Stock',       'BP_Stock',       f"{tab_key}_chk_bp_stock",  f"{tab_key}_val_bp_stock",  0.60, True ),  # 0.55→0.60, ON
+            ('BP_Sector_CW',   'BP_Sector_CW',   f"{tab_key}_chk_bp_sec_cw", f"{tab_key}_val_bp_sec_cw", 0.50, True ),  # ON
+            ('BP_Sector_EW',   'BP_Sector_EW',   f"{tab_key}_chk_bp_sec_ew", f"{tab_key}_val_bp_sec_ew", 0.50, True ),  # ON
+            ('BP_Industry_CW', 'BP_Industry_CW', f"{tab_key}_chk_bp_ind_cw", f"{tab_key}_val_bp_ind_cw", 0.55, True ),  # 0.50→0.55, ON
+            ('BP_Industry_EW', 'BP_Industry_EW', f"{tab_key}_chk_bp_ind_ew", f"{tab_key}_val_bp_ind_ew", 0.55, True ),  # 0.50→0.55, ON
         ]
 
         bp_settings = {}
         col_bp1, col_bp2 = st.columns(2)
-        for i, (col_name, label, chk_key, val_key, default_val) in enumerate(bp_items):
+        for i, (col_name, label, chk_key, val_key, default_val, default_on) in enumerate(bp_items):
             target_col = col_bp1 if i % 2 == 0 else col_bp2
             with target_col:
                 enabled_min = st.checkbox(
                     f"{label} 最小値を有効にする",
-                    value=False,
+                    value=default_on,   # ← True（チェック済み）
                     key=chk_key,
                 )
                 if enabled_min:
