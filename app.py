@@ -554,7 +554,7 @@ def render_momentum_tab(
                     key=f"{tab_key}_atr_min"
                 )
                 atr_max = st.number_input(
-                    "ATR from MA50 最大値 (%)", value=8.0, step=0.1,
+                    "ATR from MA50 最大値 (%)", value=4.0, step=0.1,
                     key=f"{tab_key}_atr_max"
                 )
                 adr_min = st.number_input(
@@ -829,7 +829,7 @@ def render_momentum_tab_both(
                     key=f"{tab_key}_atr_min"
                 )
                 atr_max = st.number_input(
-                    "ATR from MA50 最大値 (%)", value=8.0, step=0.1,
+                    "ATR from MA50 最大値 (%)", value=4.0, step=0.1,
                     key=f"{tab_key}_atr_max"
                 )
                 st.markdown("---")
